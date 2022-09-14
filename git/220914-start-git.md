@@ -57,6 +57,17 @@
 - 제목과 내용은 한 줄 띄워 분리할 것.
 - 내용은 이 commit의 구성과 의도를 충실히 작성할 것.
 
+# Branch
+
+- 분기점을 생성하여 독립적으로 코드를 변경할 수 있도록 도와주는 모델
+
+-- 명령어
+- git branch 	: 지금 branch가 어떤 branch 인지 알려주고 다른 branch가 있다면 보여준다.
+  git branch 뒤에 내가 지정하고 싶은 이름을 적으면 branch 내가 지정하고 싶은 이름으로 생성된다.
+- git switch	: git switch branch name을 적으면 해당 branch로 이동 할 수 있다. 
+- git branch -D	: branch를 지울 수 있다. 
+- git merge	: 같은 이름인 파일의 내용을 합칠 수 있다. 
+
 
 ## 느낀점 
 
