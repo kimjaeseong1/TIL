@@ -138,3 +138,126 @@ Stream<String> lineStream =
   Files.lines(Path.get("file.txt"),
               Charset.forName("UTF-8"));     
 ```
+
+### 병렬 스트림 Parallel Stream
+- 스트림 생성 시 사용하는 Steam 대신 parallelStream 메소드를 사용해서 병렬 스트림을 쉽게 생성할 수 있습니다. 내부적으로 는 쓰레드를 처리하기 위해 자바 7부터 도입된 Fork/Join framework를 사용합니다 
+```shell
+// 병렬 스트림 생성
+Steam<Product> parallelStream = productList.parallelStream();
+
+// 병렬 여부 확인
+boolean isParallel = ParallelStream.isParallel();
+```
+따라서 다음 코드는 각 작업을 쓰레드를 이용해 병렬 처리됩니다. 
+
+```shell
+boolean isMany = parallelStream
+  .map(product - product.getAmount() * 10)
+  .anyMatch(amount -> amount > 200);
+```
+
+다음은 배열을 이용해서 병렬 스트림을 생성하는 경우
+
+``Arrays.stream(arr).parallel();
+``
+
+컬렉션과 배열이 아닌 경우는 다음과 같이 parallel 메소드를 이용해서 처리합니다. 
+
+```shell
+IntStream intStream = IntStream.range(1,150).parallel();
+boolean isParallel = intStream.isParallel();
+```
+
+다시 시퀀셜(sequential) 모드로 돌리고 싶다면 다음처럼  sequential 메소드를 사용합니다. 뒤에서 한번 더 다루겠지만 반드시 병렬 스트림이 좋은 것은 아니다
+```shell
+IntStream intStream = intStream.sequential();
+boolean isParallel = intStream.isParallel();
+```
+
+### 스트림 연결하기
+Stream.concat 메소드를 이용해 두 개의 스트림을 연결해서 새로운 스트림을 만들어낼 수 있습니다. 
+```shell
+Stream<String> stream1 = Stream.of("java","Scala","Groovy");
+Stream<String> stream2 = Stream.of("Python","Go","Swift");
+Stream <Strin> concat = Stream.concat(stream1, stream2);
+//[java,Scala,Groovy,Python,Go,Swift]
+```
+
+### 가공하기
+- 전체 요소 중에서 다음과 같은 API를 이용해서 내가 원하는 것만 뽑아낼 수 있습니다.
+   이러한 가공 단계를 중간 작업(intermediate operations)이라고 하는데 ,이러한 작업은 스트림을 리턴하기 때문에 여러 작업을 이어 붙여서(chaining) 작성할 수 있습니다. 
+``List<String> names = Arrays.asList("Eric","Elena","Java")``
+아래 나오는 예제 코드는 위와 같은 리스트를 대상으로 합니다. 
+
+### Filtering
+- 필터(filter)는 스트림 내 요소들을 하나씩 평가해서 걸려내는 작업입니다. 인자로 받는 Predicate는 boolean을 리턴하는 함수형 인터페이스로 평가식이 들어가게 됩니다. 
+``Stream<T> filter(Predicate<? super T> prediecate);``
+
+간단한 예제 입니다. 
+```shell
+Stream<String> stream = 
+  names.stream()
+  .filter(name -> name.contains("a"));
+  //[Elena, Java]
+```
+스트림의 각 요소에 대해서 평가식을 실행하게 되고 'a'가 들어간 이름만 들어간 스트림이 리텁됩니다. 
+
+### Mapping
+맴(map)은 스트림 내 요소들을 하나씩 특정 값으로 변환해줍니다. 이 때 값을 변환하기 위한 람다를 인자로 받습니다.
+``<R> Stream<R> map(Function<? super T, ? extends R> mapper);``
+
+스트림에 들어가 있는 값이 input이 되어서 특정 로직을 거친 후 output 이 되어 (리턴도는) 개로운 스트림에 담기게 됩니다. 이러한 작업을 맴핑(mapping)이라고 합니다. 
+
+간단한 예제 입니다. 스트림 내 String의 toUpperCase 메소드를 실행해서 대문자로 변환한 값들이 담긴 스트림을 리턴합니다. 
+
+```shell
+Stream<String> stream = 
+  names.stream()
+  .map(String::toUpperCase);
+  //[ERIC, ELENA,JAVA]
+```
+다음처럼 요소 내 들어잇는 Product 개체의 수량을 꺼내올 수도 있습니다. 각 '상품'을 '상품의 수량'으로 맴핑하는 거죠
+```shell
+Stream<Intrger> stream = 
+  productList.stream()
+  .map(Product::getAmount);
+  //[23,14,13,23,13]
+```
+
+map 이외에도 조금 더 복작한 flatMap 메소드도 있습니다. 
+
+``<R> Stream<R> flatMap(Function<? super T,? extends Stream<? extends R>> mapper);``
+
+인자로 mapper를 받고 있는데 리턴 타입이 Stream 입니다. 즉 새로운 스트림을 생성해서 리텅하는 람다를 넘겨야 합니다. flatMap은 중첩 구조를 한 단계 제거하고
+단일 컬렉션으로 만들어주는 역할을 합니다. 이러한 작업을 플래트닝(flattening)이라고 합니다. 
+
+다음과 같은 중첩된 리스트가 있씁니다. 
+
+```shell
+List<List<String>> list = 
+  Arrays.asList(Arrays.aslist("a"),
+                Arrays.asList("b"));
+                // [[a],[b]
+```
+이를 flatMap을 사용해서 중첩 구조를 제거한 후 작업을 할 수 있습니다.
+
+```shell
+List<String> flatList=
+  list.stream()
+  .flatMap(Collection::stream)
+  .collect(Collectors.toList());
+  //[a,b]
+```
+
+이번엔 객체에 적용해보겠습니다.
+```shell
+students.stream()
+  .flatMapToInt(student ->
+                IntStream.of(student.getKor(),
+                             student.getEng(),
+                             student.getMath()) )
+  .average().ifPresent(avg ->
+                      System.out.println(Math.round(avg * 10)/ 10.0)) ;  
+```
+위 예쩨에서는 학생 객체를 가진 스트림에서 학생의 국영수 점수를 뽑아 새로운 스트림을 만들어
+평균을 구하는 코드입니다. 이는 map 메소드 자체만으로는 한번에 할 수 없는 기능입니다.
