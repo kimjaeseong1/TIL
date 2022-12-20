@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.coin.mapper.CoinMapper"> <!--> 인터페이스 위치</-->
+
+    <insert id="insertCoin" parameterType="HashMap">
+    insert into member
+        (email,password,name,phone,address,detail)
+    values
+        (#{email},#{password}, #{name},#{phone}, #{address}, #{detail})
+
+    </insert>
+
+    <select id="selectCoin" resultType="HashMap">
+        SELECT
+        email,password
+        FROM member
+    </select>
+
+    <insert id="insertPay" parameterType="HashMap">
+        insert into payment
+        (email,amount,uid)
+        values
+            (#{email},#{amount},#{uid})
+    </insert>
+
+
+    <select id="selectPay" resultType="HashMap">
+        SELECT
+            email,amount,uid,DATE_FORMAT(indate,'%Y-%m-%d-%T') AS indate
+        FROM
+            payment
+    </select>
+
+    <insert id="insertBuy" parameterType="HashMap" >
+        insert into buy
+        (email,coinId,name,price,amount,total)
+        values
+        (#{email},#{coinId},#{name},#{price},#{amount},#{total})
+    </insert>
+
+    <select id="selectCheck" resultType="HashMap" parameterType="String">
+        SELECT
+            email,amount
+        FROM
+            payment
+        WHERE email=#{email}
+    </select>
+
+    <insert id="insertContact" parameterType="HashMap">
+        insert into contact
+        (name,email,phone,message)
+        values
+            (#{name},#{email},#{phone},#{message})
+    </insert>
+
+
+
+    <select id="selectDeal" resultType="HashMap" parameterType="String">
+        SELECT
+            coinId,amount,name,total,DATE_FORMAT(indate,'%Y-%m-%d-%T') AS indate
+        FROM
+            buy
+
+        WHERE email = #{email}
+
+    </select>
+
+    <select id="OldMoney" resultType="Double" parameterType="String">
+        select
+            sum(total)
+        from
+            buy
+        where
+            email=#{email}
+
+    </select>
+
+    <insert id="Subscribe" parameterType="String" >
+        insert into subscribe
+        (email)
+        value
+        (#{email})
+    </insert>
+
+
+
+
+
+</mapper>
