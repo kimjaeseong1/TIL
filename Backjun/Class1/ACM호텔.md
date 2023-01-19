@@ -1,4 +1,4 @@
-## 아스키 코드(파이썬)
+## ACM 호텔
 
 ### 문제
 <img src="https://www.acmicpc.net/upload/images2/acmhotel.png">
